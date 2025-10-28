@@ -91,35 +91,9 @@ alembic upgrade head
 
 ```bash
 # Запустить тесты внутри API контейнера
-docker exec -it aiti_api /app/scripts/run_tests.sh
-
-# Или короче
-docker exec -it aiti_api bash /app/scripts/run_tests.sh
+docker compose exec api /bin/sh scripts/run_tests.sh
 ```
 
-## Локальная разработка
-
-```bash
-# Установить зависимости
-poetry install
-
-# Запустить API (PostgreSQL должен быть запущен)
-cd api
-alembic upgrade head
-uvicorn api.main:app --reload
-
-# Запустить тесты локально
-pytest tests/ -v
-```
-
-## Переменные окружения
-
-Основные переменные в `.env`:
-- `POSTGRES_USER` - пользователь БД (по умолчанию: aiti_user)
-- `POSTGRES_PASSWORD` - пароль БД (по умолчанию: aiti_password)
-- `POSTGRES_DB` - имя БД (по умолчанию: aiti_db)
-- `POSTGRES_HOST` - хост БД (по умолчанию: postgres)
-- `POSTGRES_PORT` - порт БД (по умолчанию: 5432)
 
 ## Документация API
 

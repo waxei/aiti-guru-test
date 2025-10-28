@@ -1,0 +1,89 @@
+version: '3.9'
+
+services:
+  # PostgreSQL 18 база данных
+  postgres:
+    image: postgres:18-alpine
+    container_name: aiti_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aiti_user
+      POSTGRES_PASSWORD: aiti_password
+      POSTGRES_DB: aiti_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiti_user -d aiti_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - aiti_network
+
+  # Контейнер для миграций
+  migrations:
+    build:
+      context: .
+      dockerfile: api/Dockerfile.migrations
+    container_name: aiti_migrations
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: aiti_user
+      POSTGRES_PASSWORD: aiti_password
+      POSTGRES_DB: aiti_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DSN: postgresql+asyncpg://aiti_user:aiti_password@postgres:5432/aiti_db
+      # Для интерактивного режима установите: MIGRATIONS_INTERACTIVE=true
+      MIGRATIONS_INTERACTIVE: ${MIGRATIONS_INTERACTIVE:-true}
+    volumes:
+      - ./api:/app/api
+      - ./pyproject.toml:/app/pyproject.toml
+      - ./poetry.lock:/app/poetry.lock
+    networks:
+      - aiti_network
+
+  # FastAPI приложение
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: aiti_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: aiti_user
+      POSTGRES_PASSWORD: aiti_password
+      POSTGRES_DB: aiti_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      DEBUG: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтируем код для разработки с hot-reload
+      - ./api:/app/api
+      - ./tests:/app/tests
+      - ./scripts:/app/scripts
+    networks:
+      - aiti_network
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  aiti_network:
+    driver: bridge
+

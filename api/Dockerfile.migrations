@@ -1,0 +1,47 @@
+# Базовый образ Python 3.12 Alpine
+FROM python:3.13-alpine
+
+# Устанавливаем переменные окружения
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_VERSION=2.2.1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_CREATE=false
+
+# Добавляем Poetry в PATH
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+# Устанавливаем системные зависимости
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    postgresql-dev \
+    postgresql-client \
+    libffi-dev \
+    curl \
+    bash \
+    && curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry --version
+
+# Создаем рабочую директорию
+WORKDIR /app
+
+# Копируем файлы зависимостей
+COPY pyproject.toml poetry.lock* ./
+
+# Устанавливаем зависимости
+RUN poetry install --no-root --only main
+
+# Копируем код приложения
+COPY api/ ./api/
+
+# Копируем скрипт миграций
+COPY scripts/run_migrations.sh /app/run_migrations.sh
+RUN chmod +x /app/run_migrations.sh
+
+# Запускаем скрипт миграций
+ENTRYPOINT ["/app/run_migrations.sh"]
+

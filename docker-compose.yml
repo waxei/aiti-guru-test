@@ -41,7 +41,7 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DSN: postgresql+asyncpg://aiti_user:aiti_password@postgres:5432/aiti_db
       # Для интерактивного режима установите: MIGRATIONS_INTERACTIVE=true
-      MIGRATIONS_INTERACTIVE: ${MIGRATIONS_INTERACTIVE:-true}
+      MIGRATIONS_INTERACTIVE: ${MIGRATIONS_INTERACTIVE:-false}
     volumes:
       - ./api:/app/api
       - ./pyproject.toml:/app/pyproject.toml

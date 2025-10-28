@@ -34,6 +34,10 @@ RUN poetry install --no-root --only main
 # Копируем код приложения
 COPY api/ ./api/
 
+# Копируем и делаем исполняемыми скрипты
+COPY scripts/ ./scripts/
+RUN chmod +x /app/scripts/*.sh
+
 # Создаем непривилегированного пользователя
 RUN adduser -D -u 1000 appuser && \
     chown -R appuser:appuser /app

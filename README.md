@@ -1,6 +1,13 @@
 # AITI Guru Test - REST API для управления заказами
 
+![Python](https://img.shields.io/badge/python-3.13-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-blue.svg)
+![Docker](https://img.shields.io/badge/Docker-compose-blue.svg)
+
 REST API сервис для добавления товаров в заказы с проверкой остатков на складе.
+
+**📝 [Ответы на вопросы из задания](answers.md)**
 
 ## Технологический стек
 

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Numeric, Text, DateTime
 from sqlalchemy.orm import relationship, backref
 from .base import Base
-from datetime import datetime, UTC
+from datetime import datetime
 
 class Client(Base):
     __tablename__ = 'clients'
@@ -17,7 +17,7 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True)
     client_id = Column(Integer, ForeignKey('clients.id'), nullable=False, index=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC), index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     client = relationship('Client', back_populates='orders')
     items = relationship('OrderItem', back_populates='order', cascade="all, delete-orphan")
